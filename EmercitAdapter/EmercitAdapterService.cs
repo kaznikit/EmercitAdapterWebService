@@ -29,7 +29,7 @@ namespace EmercitAdapter
     {
       try
       {
-        string jss = JsonConvert.SerializeObject(ier);
+        string jss = JsonConvert.SerializeObject(ier) ;
 
         if (conn.State != System.Data.ConnectionState.Open)
         {
@@ -38,7 +38,7 @@ namespace EmercitAdapter
         using (var cmd = new NpgsqlCommand(sqlQuery, conn))
         {
           cmd.Parameters.Add(new NpgsqlParameter("d", NpgsqlDbType.Jsonb) { Value = jss });
-          cmd.ExecuteNonQuery();
+          var ss = cmd.ExecuteNonQuery();  
         }
 
         return true;
@@ -47,6 +47,10 @@ namespace EmercitAdapter
       {
         return false;
       }
+      finally
+      {
+        conn.Close();
+      }
     }
 
     private void ConnectToDatabase()
@@ -54,9 +58,15 @@ namespace EmercitAdapter
       if (conn == null)
       {
         conn = new NpgsqlConnection(connectionString);
-        conn.TypeMapper.UseJsonNet();
       }
       conn.Open();
+
+      if (conn.State == System.Data.ConnectionState.Open)
+      {
+        conn.TypeMapper.UseJsonNet();
+      }
     }
+
+    
   }
 }
